@@ -191,7 +191,7 @@
       position: relative;
       z-index: 1;
       display: grid;
-      gap: 1.4rem;
+      gap: 2.4rem;
       justify-items: center;
       perspective: 1200px;
       font-family: "IBM Plex Sans", "Avenir Next", system-ui, sans-serif;
@@ -236,16 +236,8 @@
       opacity: 0.85;
     }
 
-    .status {
-      font-size: 0.75rem;
-      letter-spacing: 0.28em;
-      color: rgba(198, 212, 226, 0.65);
-      text-transform: uppercase;
-      text-align: center;
-    }
-
     footer {
-      margin-top: clamp(1.5rem, 4vw, 2.6rem);
+      margin-top: clamp(0.8rem, 2vw, 1.6rem);
       text-align: center;
       font-size: 0.72rem;
       letter-spacing: 0.3em;
@@ -290,7 +282,6 @@
 
     <section class="message-container">
       <div class="message" data-message="Building something big. Check in soon."></div>
-      <div class="status">Sound status: <span id="sound-label">calibrating</span></div>
     </section>
 
     <footer>⟢ awaiting ignition ⟣</footer>
@@ -370,7 +361,6 @@
 
     rafId = requestAnimationFrame(animateLetters);
 
-    const soundLabel = document.getElementById("sound-label");
     let audioCtx;
     let masterGain;
     let padCreated = false;
@@ -378,7 +368,7 @@
 
     const createNebulaPad = (ctx) => {
       const padGain = ctx.createGain();
-      padGain.gain.value = 0.12;
+      padGain.gain.value = 0.18;
 
       const filter = ctx.createBiquadFilter();
       filter.type = "lowpass";
@@ -397,10 +387,10 @@
         osc.detune.value = (idx - 1) * 6;
 
         const lfo = ctx.createOscillator();
-        lfo.frequency.value = 0.015 + idx * 0.008;
+        lfo.frequency.value = 0.024 + idx * 0.01;
 
         const lfoGain = ctx.createGain();
-        lfoGain.gain.value = 22 + idx * 12;
+        lfoGain.gain.value = 32 + idx * 12;
 
         lfo.connect(lfoGain).connect(osc.frequency);
         lfo.start();
@@ -425,11 +415,11 @@
 
       const filter = ctx.createBiquadFilter();
       filter.type = "bandpass";
-      filter.frequency.value = 320;
-      filter.Q.value = 0.6;
+      filter.frequency.value = 420;
+      filter.Q.value = 0.7;
 
       const gain = ctx.createGain();
-      gain.gain.value = 0.02;
+      gain.gain.value = 0.035;
 
       noise.connect(filter).connect(gain).connect(masterGain);
       noise.start();
@@ -443,7 +433,7 @@
       chimeGain.gain.exponentialRampToValueAtTime(0.0001, now + 5.5);
       chimeGain.connect(masterGain);
 
-      const chimeNotes = [659.25, 587.33, 523.25]; // E5, D5, C5
+      const chimeNotes = [659.25, 554.37, 493.88]; // E5, C#5, B4
 
       chimeNotes.forEach((freq, idx) => {
         const osc = ctx.createOscillator();
@@ -455,7 +445,7 @@
         osc.stop(now + 5.6);
       });
 
-      chimeTimer = setTimeout(() => scheduleChime(ctx), 7000 + Math.random() * 2500);
+      chimeTimer = setTimeout(() => scheduleChime(ctx), 6500 + Math.random() * 1800);
     };
 
     const designSoundscape = (ctx) => {
@@ -480,11 +470,8 @@
         designSoundscape(audioCtx);
 
         masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
-        masterGain.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + 6);
-
-        soundLabel.textContent = "online";
+        masterGain.gain.exponentialRampToValueAtTime(0.24, audioCtx.currentTime + 6);
       } catch (error) {
-        soundLabel.textContent = "tap to enable";
         throw error;
       }
     };
@@ -499,6 +486,7 @@
             if (audioCtx?.state === "running") {
               window.removeEventListener("pointerdown", resumeOnInteract);
               window.removeEventListener("keydown", resumeOnInteract);
+              window.removeEventListener("touchstart", resumeOnInteract);
             }
           } catch (err) {
             // continue waiting for a successful interaction
@@ -507,10 +495,33 @@
 
         window.addEventListener("pointerdown", resumeOnInteract);
         window.addEventListener("keydown", resumeOnInteract);
+        window.addEventListener("touchstart", resumeOnInteract);
       }
     };
 
-    window.addEventListener("load", ensureSound);
+    const autoResume = () => {
+      if (audioCtx?.state === "suspended") {
+        audioCtx.resume().catch(() => {});
+      }
+    };
+
+    window.addEventListener("load", () => {
+      ensureSound();
+      autoResume();
+      const resumeInterval = setInterval(() => {
+        if (audioCtx?.state === "suspended") {
+          audioCtx.resume().catch(() => {});
+        } else if (audioCtx?.state === "running") {
+          clearInterval(resumeInterval);
+        }
+      }, 4000);
+
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+          autoResume();
+        }
+      });
+    });
   </script>
 </body>
 </html>
