@@ -368,36 +368,70 @@
 
     const createNebulaPad = (ctx) => {
       const padGain = ctx.createGain();
-      padGain.gain.value = 0.18;
+      padGain.gain.value = 0.32;
 
       const filter = ctx.createBiquadFilter();
       filter.type = "lowpass";
-      filter.frequency.value = 920;
-      filter.Q.value = 0.9;
+      filter.frequency.value = 1600;
+      filter.Q.value = 0.7;
 
-      padGain.connect(filter).connect(masterGain);
+      const slowPan = ctx.createStereoPanner();
+      const panLfo = ctx.createOscillator();
+      const panDepth = ctx.createGain();
+      panLfo.frequency.value = 0.012;
+      panDepth.gain.value = 0.55;
+      panLfo.connect(panDepth).connect(slowPan.pan);
+      panLfo.start();
 
-      const baseFreq = 110;
-      const ratios = [1, 5 / 4, 3 / 2];
+      padGain.connect(filter).connect(slowPan).connect(masterGain);
+
+      const baseFreq = 220;
+      const ratios = [1, 4 / 3, 5 / 3, 2];
 
       ratios.forEach((ratio, idx) => {
         const osc = ctx.createOscillator();
-        osc.type = "sine";
+        osc.type = idx % 2 === 0 ? "sine" : "triangle";
         osc.frequency.value = baseFreq * ratio;
-        osc.detune.value = (idx - 1) * 6;
+        osc.detune.value = (idx - 1.5) * 9;
+
+        const voiceGain = ctx.createGain();
+        voiceGain.gain.value = 0.12 / ratios.length;
 
         const lfo = ctx.createOscillator();
-        lfo.frequency.value = 0.024 + idx * 0.01;
+        lfo.frequency.value = 0.03 + idx * 0.012;
 
         const lfoGain = ctx.createGain();
-        lfoGain.gain.value = 32 + idx * 12;
+        lfoGain.gain.value = 38 + idx * 16;
+
+        const tremolo = ctx.createOscillator();
+        const tremoloGain = ctx.createGain();
+        tremolo.frequency.value = 0.18 + idx * 0.06;
+        tremoloGain.gain.value = 0.18;
+        tremolo.connect(tremoloGain).connect(voiceGain.gain);
+        tremolo.start();
 
         lfo.connect(lfoGain).connect(osc.frequency);
         lfo.start();
 
-        osc.connect(padGain);
+        osc.connect(voiceGain).connect(padGain);
         osc.start();
       });
+
+      const shimmer = ctx.createOscillator();
+      shimmer.type = "triangle";
+      shimmer.frequency.value = 880;
+      const shimmerLfo = ctx.createOscillator();
+      const shimmerLfoGain = ctx.createGain();
+      shimmerLfo.frequency.value = 0.22;
+      shimmerLfoGain.gain.value = 220;
+      shimmerLfo.connect(shimmerLfoGain).connect(shimmer.frequency);
+      shimmerLfo.start();
+
+      const shimmerGain = ctx.createGain();
+      shimmerGain.gain.value = 0.015;
+
+      shimmer.connect(shimmerGain).connect(masterGain);
+      shimmer.start();
     };
 
     const createDust = (ctx) => {
@@ -415,13 +449,26 @@
 
       const filter = ctx.createBiquadFilter();
       filter.type = "bandpass";
-      filter.frequency.value = 420;
-      filter.Q.value = 0.7;
+      filter.frequency.value = 520;
+      filter.Q.value = 0.8;
 
       const gain = ctx.createGain();
-      gain.gain.value = 0.035;
+      gain.gain.value = 0.05;
 
-      noise.connect(filter).connect(gain).connect(masterGain);
+      const delay = ctx.createDelay(6.0);
+      delay.delayTime.value = 2.4;
+
+      const feedback = ctx.createGain();
+      feedback.gain.value = 0.32;
+
+      const tilt = ctx.createBiquadFilter();
+      tilt.type = "highshelf";
+      tilt.frequency.value = 1800;
+      tilt.gain.value = 6;
+
+      noise.connect(filter).connect(gain).connect(tilt).connect(masterGain);
+      gain.connect(delay).connect(feedback).connect(delay);
+      delay.connect(masterGain);
       noise.start();
     };
 
@@ -440,9 +487,13 @@
         osc.type = "sine";
         osc.frequency.setValueAtTime(freq, now);
         osc.detune.setValueAtTime((Math.random() - 0.5) * 10, now);
-        osc.connect(chimeGain);
+        const oscGain = ctx.createGain();
+        oscGain.gain.setValueAtTime(0.0001, now + idx * 0.18);
+        oscGain.gain.exponentialRampToValueAtTime(0.05, now + idx * 0.18 + 0.2);
+        oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 5.8);
+        osc.connect(oscGain).connect(chimeGain);
         osc.start(now + idx * 0.18);
-        osc.stop(now + 5.6);
+        osc.stop(now + 5.8);
       });
 
       chimeTimer = setTimeout(() => scheduleChime(ctx), 6500 + Math.random() * 1800);
@@ -470,7 +521,7 @@
         designSoundscape(audioCtx);
 
         masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
-        masterGain.gain.exponentialRampToValueAtTime(0.24, audioCtx.currentTime + 6);
+        masterGain.gain.exponentialRampToValueAtTime(0.32, audioCtx.currentTime + 6);
       } catch (error) {
         throw error;
       }
