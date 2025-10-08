@@ -26,6 +26,54 @@
       display: none;
     }
 
+    .sound-toggle {
+      position: absolute;
+      top: clamp(1rem, 2.6vw, 1.6rem);
+      right: clamp(1rem, 2.6vw, 1.6rem);
+      padding: 0.5rem 1.25rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 220, 192, 0.45);
+      background: rgba(9, 16, 27, 0.55);
+      color: var(--text-main);
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 200ms ease, transform 200ms ease, border-color 200ms ease;
+      backdrop-filter: blur(12px);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4em;
+      z-index: 2;
+    }
+
+    .sound-toggle:hover {
+      background: rgba(15, 28, 48, 0.72);
+      transform: translateY(-1px);
+    }
+
+    .sound-toggle:focus-visible {
+      outline: 2px solid var(--highlight);
+      outline-offset: 3px;
+    }
+
+    .sound-toggle.is-muted {
+      border-color: rgba(104, 132, 158, 0.35);
+      color: rgba(202, 212, 228, 0.75);
+    }
+
+    .sound-toggle::before {
+      content: "";
+      width: 0.65em;
+      height: 0.65em;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.8;
+      box-shadow: 0 0 8px currentColor;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -130,11 +178,11 @@
     }
 
     .planets {
-      margin: clamp(1.5rem, 4vw, 2.4rem) 0 clamp(1.8rem, 4vw, 2.8rem);
-      display: grid;
-      grid-template-columns: repeat(8, minmax(42px, 1fr));
-      gap: clamp(0.6rem, 2vw, 1.3rem);
-      justify-items: center;
+      margin: clamp(1.8rem, 5vw, 3rem) 0 clamp(1.6rem, 4.5vw, 3.2rem);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: clamp(0.8rem, 2.6vw, 1.6rem);
       position: relative;
       z-index: 1;
     }
@@ -144,51 +192,61 @@
       position: absolute;
       left: 6%;
       right: 6%;
-      top: 50%;
+      top: 54%;
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255, 224, 194, 0.4), transparent);
-      transform: translateY(-50%);
-      opacity: 0.4;
+      background: linear-gradient(90deg, transparent, rgba(255, 199, 156, 0.45), transparent);
+      filter: blur(0.3px);
+      opacity: 0.55;
+      pointer-events: none;
     }
 
     .planet {
+      --size: clamp(52px, 9vw, 82px);
       position: relative;
-      width: 100%;
-      aspect-ratio: 1;
+      width: var(--size);
+      height: var(--size);
       border-radius: 50%;
+      background: radial-gradient(circle at 72% 24%, rgba(255, 255, 255, 0.55), transparent 60%),
+        radial-gradient(circle at 30% 75%, rgba(255, 160, 120, 0.38), transparent 72%),
+        linear-gradient(140deg, rgba(14, 17, 35, 0.6), rgba(9, 12, 24, 0.9));
       overflow: hidden;
       box-shadow:
-        0 14px 28px rgba(0, 0, 0, 0.38),
-        inset 0 0 22px rgba(255, 255, 255, 0.1);
+        0 22px 34px rgba(0, 12, 25, 0.42),
+        0 2px 4px rgba(255, 204, 168, 0.18) inset;
       animation: floatPlanet 12s ease-in-out infinite;
     }
 
-    .planet::before,
+    .planet::before {
+      content: "";
+      position: absolute;
+      inset: -15%;
+      background: conic-gradient(from var(--start, 80deg), var(--c1) 0%, var(--c2) var(--cut, 40%), rgba(8, 12, 20, 0.94) 100%);
+      transform: rotate(var(--twist, 0deg));
+      filter: saturate(110%) brightness(1.05);
+    }
+
     .planet::after {
       content: "";
       position: absolute;
-      inset: 0;
+      inset: 12%;
       border-radius: 50%;
-    }
-
-    .planet::after {
-      background: radial-gradient(140% 90% at 20% 15%, rgba(255, 255, 255, 0.38), transparent 62%);
+      background: radial-gradient(circle at 40% 30%, rgba(255, 255, 255, 0.55), transparent 70%);
       mix-blend-mode: screen;
-      opacity: 0.7;
+      opacity: 0.65;
     }
 
-    .planet--1 { background: conic-gradient(from 120deg, #ffde9f 0%, #f26d49 40%, #2b233e 100%); animation-delay: 0s; }
-    .planet--2 { background: conic-gradient(from 210deg, #0b1f39 0%, #f98d5c 42%, #1d5d71 78%, #040a16 100%); animation-delay: -2s; }
-    .planet--3 { background: conic-gradient(from 40deg, #77c7df 0%, #1f3949 35%, #fbb47f 82%, #0d1f29 100%); animation-delay: -4s; }
-    .planet--4 { background: conic-gradient(from 110deg, #2d2f3d 0%, #080f17 20%, #c4a987 60%, #050a0f 100%); animation-delay: -6s; }
-    .planet--5 { background: conic-gradient(from 80deg, #ffb696 0%, #f15b4a 43%, #311f25 100%); animation-delay: -8s; }
-    .planet--6 { background: conic-gradient(from 160deg, #1b3a37 0%, #f7a270 44%, #33221f 82%, #06090f 100%); animation-delay: -10s; }
-    .planet--7 { background: conic-gradient(from 120deg, #f8be9a 0%, #3f2c22 44%, #0d0f1e 92%); animation-delay: -12s; }
-    .planet--8 { background: conic-gradient(from 200deg, #f4d3b3 0%, #f89263 33%, #21191e 72%, #04060c 100%); animation-delay: -14s; }
+    .planet--1 { --c1: #f6ae97; --c2: #f86666; --start: 60deg; --cut: 48%; --twist: 2deg; animation-delay: 0s; }
+    .planet--2 { --c1: #f3d7a8; --c2: #487c9b; --start: 90deg; --cut: 55%; --twist: -6deg; animation-delay: -1s; }
+    .planet--3 { --c1: #f09578; --c2: #273b53; --start: 120deg; --cut: 38%; --twist: 4deg; animation-delay: -2s; }
+    .planet--4 { --c1: #f6c89b; --c2: #132030; --start: 70deg; --cut: 42%; --twist: 0deg; animation-delay: -3s; }
+    .planet--5 { --c1: #f8bba2; --c2: #35576e; --start: 80deg; --cut: 47%; --twist: 6deg; animation-delay: -4s; }
+    .planet--6 { --c1: #f0cfaa; --c2: #2d2b3d; --start: 100deg; --cut: 52%; --twist: -3deg; animation-delay: -5s; }
+    .planet--7 { --c1: #f28f6d; --c2: #1a2c3a; --start: 115deg; --cut: 44%; --twist: 3deg; animation-delay: -6s; }
+    .planet--8 { --c1: #f5b18d; --c2: #3e5667; --start: 85deg; --cut: 40%; --twist: -5deg; animation-delay: -7s; }
 
     @keyframes floatPlanet {
       0%, 100% { transform: translate3d(0, 0, 0); }
-      50% { transform: translate3d(0, -6%, 0); }
+      50% { transform: translate3d(0, -8%, 0); }
     }
 
     .message-container {
@@ -208,9 +266,18 @@
       display: inline-flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 0.32em;
-      font-size: clamp(0.95rem, 2.4vw, 1.25rem);
-      line-height: 1.9;
+      gap: 0.34em;
+      font-size: clamp(1rem, 2.5vw, 1.35rem);
+      line-height: 1.8;
+    }
+
+    .message--primary {
+      letter-spacing: 0.26em;
+    }
+
+    .message--secondary {
+      letter-spacing: 0.38em;
+      color: rgba(223, 228, 243, 0.82);
     }
 
     .letter,
@@ -223,21 +290,23 @@
       transition: transform 260ms ease, text-shadow 260ms ease;
       will-change: transform;
       text-shadow:
-        0 0 18px rgba(104, 215, 255, 0.2),
-        0 0 40px rgba(250, 135, 100, 0.32);
+        0 9px 18px rgba(18, 32, 54, 0.65),
+        0 0 14px rgba(255, 196, 160, 0.28);
     }
 
     .letter::after {
       content: "";
       position: absolute;
-      inset: 60% 10% -14% 10%;
-      background: radial-gradient(circle at 50% 0%, rgba(250, 135, 100, 0.38), transparent 70%);
-      opacity: 0;
-      transition: opacity 220ms ease;
+      inset: 72% 20% -20% 20%;
+      background: linear-gradient(180deg, rgba(255, 206, 178, 0.55), rgba(255, 206, 178, 0.12) 65%, transparent 100%);
+      opacity: 0.35;
+      transition: opacity 240ms ease, transform 240ms ease;
+      filter: blur(0.4px);
     }
 
     .letter.is-pulled::after {
-      opacity: 0.85;
+      opacity: 0.92;
+      transform: translateY(4%);
     }
 
     footer {
@@ -250,17 +319,23 @@
     }
 
     @media (max-width: 700px) {
-      .planets {
-        grid-template-columns: repeat(4, minmax(48px, 1fr));
-        row-gap: 1rem;
+      .sound-toggle {
+        top: 0.85rem;
+        right: 0.85rem;
+        padding: 0.45rem 1.1rem;
+        letter-spacing: 0.22em;
       }
 
-      .planets::after {
-        display: none;
+      .planets {
+        gap: 0.9rem;
       }
 
       .message {
-        letter-spacing: 0.12em;
+        letter-spacing: 0.18em;
+      }
+
+      .message--secondary {
+        letter-spacing: 0.28em;
       }
     }
   </style>
@@ -268,6 +343,7 @@
 <body>
   <audio id="serene-loop" src="audio-serene.wav" autoplay loop muted playsinline></audio>
   <main>
+    <button class="sound-toggle is-muted" id="sound-toggle" type="button" aria-pressed="false">Sound off</button>
     <header>
       <p class="tagline">6ixsense</p>
       <h1>Building something big.</h1>
@@ -286,33 +362,44 @@
     </section>
 
     <section class="message-container">
-      <div class="message" data-message="Building something big. Check in soon."></div>
+      <div class="message message--primary" data-message="Building something big."></div>
+      <div class="message message--secondary" data-message="Check in soon."></div>
     </section>
 
     <footer>⟢ awaiting ignition ⟣</footer>
   </main>
 
   <script>
-    const messageEl = document.querySelector(".message");
-    const rawMessage = messageEl.dataset.message;
+    const messageEls = [...document.querySelectorAll(".message")];
     const letters = [];
 
-    [...rawMessage].forEach((char, index) => {
-      if (char === " ") {
-        const spacer = document.createElement("span");
-        spacer.className = "spacer";
-        spacer.style.width = "0.75em";
-        spacer.style.height = "1em";
-        messageEl.appendChild(spacer);
-        return;
-      }
-
+    const createLetterSpan = (char, index, line) => {
       const span = document.createElement("span");
       span.textContent = char;
       span.className = "letter";
       span.style.setProperty("--index", index);
-      messageEl.appendChild(span);
-      letters.push(span);
+      span.style.setProperty("--line", line);
+      return span;
+    };
+
+    messageEls.forEach((messageEl, lineIndex) => {
+      const rawMessage = messageEl.dataset.message;
+      messageEl.innerHTML = "";
+
+      [...rawMessage].forEach((char, index) => {
+        if (char === " ") {
+          const spacer = document.createElement("span");
+          spacer.className = "spacer";
+          spacer.style.width = "0.75em";
+          spacer.style.height = "1em";
+          messageEl.appendChild(spacer);
+          return;
+        }
+
+        const letter = createLetterSpan(char, index, lineIndex);
+        messageEl.appendChild(letter);
+        letters.push(letter);
+      });
     });
 
     const pointer = {
@@ -331,7 +418,7 @@
     });
 
     let rafId;
-    const influenceRadius = 220;
+    const influenceRadius = 240;
 
     const animateLetters = (time) => {
       const tick = time * 0.0006;
@@ -344,13 +431,13 @@
         const dy = pointer.y - centerY;
         const distance = Math.hypot(dx, dy);
         const pullStrength = Math.max(0, 1 - distance / influenceRadius);
-        const wave = Math.sin(tick + idx * 0.6) * 0.4;
+        const wave = Math.sin(tick + idx * 0.62) * 0.38;
 
         const translateX = dx * 0.08 * pullStrength + wave * 4;
-        const translateY = dy * 0.08 * pullStrength + Math.cos(tick * 1.6 + idx) * 2;
+        const translateY = dy * 0.08 * pullStrength + Math.cos(tick * 1.5 + idx) * 2.4;
         const rotateX = (dy / window.innerHeight) * 42 * pullStrength;
         const rotateY = (-dx / window.innerWidth) * 42 * pullStrength;
-        const scale = 1 + pullStrength * 0.08;
+        const scale = 1 + pullStrength * 0.09;
 
         letter.style.transform = `translate3d(${translateX}px, ${translateY}px, ${pullStrength * 12}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
 
@@ -367,74 +454,122 @@
     rafId = requestAnimationFrame(animateLetters);
 
     const audio = document.getElementById("serene-loop");
-    const targetVolume = 0.38;
-    let fadeRequested = false;
+    const soundToggle = document.getElementById("sound-toggle");
+    const targetVolume = 0.32;
+    let fadeFrame;
+    let autoPlayAttempted = false;
 
-    const fadeInAudio = () => {
-      if (audio.muted || fadeRequested) {
-        return;
+    const updateToggleLabel = (forcedState) => {
+      const isMuted = forcedState === "off" || audio.paused || audio.muted || audio.volume < 0.01;
+      soundToggle.textContent = isMuted ? "Sound off" : "Sound on";
+      soundToggle.setAttribute("aria-pressed", String(!isMuted));
+      soundToggle.classList.toggle("is-muted", isMuted);
+    };
+
+    const cancelFade = () => {
+      if (fadeFrame) {
+        cancelAnimationFrame(fadeFrame);
+        fadeFrame = undefined;
       }
+    };
 
-      fadeRequested = true;
-      let current = audio.volume || 0;
+    const fadeTo = (target, onComplete) => {
+      cancelFade();
+      const step = target > audio.volume ? 0.0045 : -0.0055;
 
-      const ramp = () => {
-        if (audio.paused) {
-          fadeRequested = false;
+      const tick = () => {
+        const next = audio.volume + step;
+        const reached = step > 0 ? next >= target : next <= target;
+
+        audio.volume = reached ? target : Math.max(0, Math.min(target, next));
+
+        if (reached) {
+          fadeFrame = undefined;
+          onComplete?.();
           return;
         }
 
-        current = Math.min(targetVolume, current + 0.006);
-        audio.volume = current;
-
-        if (current < targetVolume) {
-          requestAnimationFrame(ramp);
-        }
+        fadeFrame = requestAnimationFrame(tick);
       };
 
-      requestAnimationFrame(ramp);
+      fadeFrame = requestAnimationFrame(tick);
     };
 
-    const cleanupUnlockListeners = () => {
-      window.removeEventListener("pointerdown", unlockAudio);
-      window.removeEventListener("touchstart", unlockAudio);
-      window.removeEventListener("keydown", unlockAudio);
+    const playAudio = () => {
+      audio.muted = false;
+      audio.volume = 0;
+      return audio.play().then(() => {
+        fadeTo(targetVolume);
+        updateToggleLabel("on");
+      }).catch(() => {
+        audio.muted = true;
+        audio.volume = 0;
+        updateToggleLabel("off");
+      });
     };
 
-    function unlockAudio() {
+    const pauseAudio = () => {
+      updateToggleLabel("off");
+      fadeTo(0, () => {
+        audio.pause();
+        audio.muted = true;
+      });
+    };
+
+    const attemptAutoPlay = () => {
+      if (autoPlayAttempted) {
+        return;
+      }
+      autoPlayAttempted = true;
+      audio.muted = true;
+      audio.volume = 0;
       audio.play().then(() => {
         audio.muted = false;
-        fadeInAudio();
-        cleanupUnlockListeners();
+        fadeTo(targetVolume);
+        updateToggleLabel("on");
       }).catch(() => {
-        // leave unlock listeners in place; some browsers still require a gesture
+        audio.muted = true;
+        updateToggleLabel("off");
       });
-    }
+    };
 
-    audio.addEventListener("playing", () => {
-      audio.muted = false;
-      fadeInAudio();
-      cleanupUnlockListeners();
+    soundToggle.addEventListener("click", () => {
+      autoPlayAttempted = true;
+      if (audio.paused || audio.muted) {
+        playAudio();
+      } else {
+        pauseAudio();
+      }
+    });
+
+    audio.addEventListener("ended", () => {
+      updateToggleLabel("off");
     });
 
     audio.addEventListener("pause", () => {
-      fadeRequested = false;
+      updateToggleLabel("off");
+    });
+
+    audio.addEventListener("playing", () => {
+      audio.muted = false;
+      updateToggleLabel("on");
     });
 
     audio.volume = 0;
     audio.muted = true;
     audio.loop = true;
     audio.setAttribute("playsinline", "");
+    updateToggleLabel("off");
 
     if (document.readyState === "complete") {
-      unlockAudio();
+      attemptAutoPlay();
     } else {
-      window.addEventListener("load", unlockAudio, { once: true });
+      window.addEventListener("load", attemptAutoPlay, { once: true });
     }
 
-    window.addEventListener("pointerdown", unlockAudio);
-    window.addEventListener("touchstart", unlockAudio);
-    window.addEventListener("keydown", unlockAudio);
+    window.addEventListener("pointerdown", attemptAutoPlay, { once: true });
+    window.addEventListener("touchstart", attemptAutoPlay, { once: true });
+    window.addEventListener("keydown", attemptAutoPlay, { once: true });
   </script>
 </body>
 </html>
