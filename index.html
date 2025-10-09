@@ -516,7 +516,7 @@
 
     const audio = document.getElementById("serene-loop");
     const mainPanel = document.querySelector("main");
-    const targetVolume = 0.24;
+    const targetVolume = 0.42;
     let fadeFrame;
 
     const cancelFade = () => {
@@ -528,7 +528,7 @@
 
     const fadeTo = (target, onComplete) => {
       cancelFade();
-      const step = target > audio.volume ? 0.004 : -0.005;
+      const step = target > audio.volume ? 0.006 : -0.0065;
 
       const tick = () => {
         const next = audio.volume + step;
