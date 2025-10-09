@@ -253,7 +253,7 @@
       position: relative;
       z-index: 1;
       display: grid;
-      gap: 2.4rem;
+      gap: clamp(1rem, 3vw, 1.6rem);
       justify-items: center;
       perspective: 1200px;
       font-family: "IBM Plex Sans", "Avenir Next", system-ui, sans-serif;
@@ -341,7 +341,7 @@
   </style>
 </head>
 <body>
-  <audio id="serene-loop" src="audio-serene.wav" autoplay loop muted playsinline></audio>
+  <audio id="serene-loop" src="audio-serene.wav" loop preload="auto" muted playsinline></audio>
   <main>
     <button class="sound-toggle is-muted" id="sound-toggle" type="button" aria-pressed="false">Sound off</button>
     <header>
@@ -455,9 +455,9 @@
 
     const audio = document.getElementById("serene-loop");
     const soundToggle = document.getElementById("sound-toggle");
-    const targetVolume = 0.32;
+    const mainPanel = document.querySelector("main");
+    const targetVolume = 0.28;
     let fadeFrame;
-    let autoPlayAttempted = false;
 
     const updateToggleLabel = (forcedState) => {
       const isMuted = forcedState === "off" || audio.paused || audio.muted || audio.volume < 0.01;
@@ -475,7 +475,7 @@
 
     const fadeTo = (target, onComplete) => {
       cancelFade();
-      const step = target > audio.volume ? 0.0045 : -0.0055;
+      const step = target > audio.volume ? 0.005 : -0.006;
 
       const tick = () => {
         const next = audio.volume + step;
@@ -516,34 +516,24 @@
       });
     };
 
-    const attemptAutoPlay = () => {
-      if (autoPlayAttempted) {
-        return;
-      }
-      autoPlayAttempted = true;
-      audio.muted = true;
-      audio.volume = 0;
-      audio.play().then(() => {
-        audio.muted = false;
-        fadeTo(targetVolume);
-        updateToggleLabel("on");
-      }).catch(() => {
-        audio.muted = true;
-        updateToggleLabel("off");
-      });
-    };
-
-    soundToggle.addEventListener("click", () => {
-      autoPlayAttempted = true;
-      if (audio.paused || audio.muted) {
+    const toggleSound = () => {
+      if (audio.paused || audio.muted || audio.volume < 0.01) {
         playAudio();
       } else {
         pauseAudio();
       }
+    };
+
+    soundToggle.addEventListener("click", (event) => {
+      event.stopPropagation();
+      toggleSound();
     });
 
-    audio.addEventListener("ended", () => {
-      updateToggleLabel("off");
+    mainPanel.addEventListener("click", (event) => {
+      if (event.target.closest("#sound-toggle")) {
+        return;
+      }
+      toggleSound();
     });
 
     audio.addEventListener("pause", () => {
@@ -560,16 +550,6 @@
     audio.loop = true;
     audio.setAttribute("playsinline", "");
     updateToggleLabel("off");
-
-    if (document.readyState === "complete") {
-      attemptAutoPlay();
-    } else {
-      window.addEventListener("load", attemptAutoPlay, { once: true });
-    }
-
-    window.addEventListener("pointerdown", attemptAutoPlay, { once: true });
-    window.addEventListener("touchstart", attemptAutoPlay, { once: true });
-    window.addEventListener("keydown", attemptAutoPlay, { once: true });
   </script>
 </body>
 </html>
