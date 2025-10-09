@@ -26,54 +26,6 @@
       display: none;
     }
 
-    .sound-toggle {
-      position: absolute;
-      top: clamp(1rem, 2.6vw, 1.6rem);
-      right: clamp(1rem, 2.6vw, 1.6rem);
-      padding: 0.5rem 1.25rem;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 220, 192, 0.45);
-      background: rgba(9, 16, 27, 0.55);
-      color: var(--text-main);
-      font-family: "IBM Plex Sans", system-ui, sans-serif;
-      font-size: 0.78rem;
-      letter-spacing: 0.26em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: background 200ms ease, transform 200ms ease, border-color 200ms ease;
-      backdrop-filter: blur(12px);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.4em;
-      z-index: 2;
-    }
-
-    .sound-toggle:hover {
-      background: rgba(15, 28, 48, 0.72);
-      transform: translateY(-1px);
-    }
-
-    .sound-toggle:focus-visible {
-      outline: 2px solid var(--highlight);
-      outline-offset: 3px;
-    }
-
-    .sound-toggle.is-muted {
-      border-color: rgba(104, 132, 158, 0.35);
-      color: rgba(202, 212, 228, 0.75);
-    }
-
-    .sound-toggle::before {
-      content: "";
-      width: 0.65em;
-      height: 0.65em;
-      border-radius: 50%;
-      background: currentColor;
-      opacity: 0.8;
-      box-shadow: 0 0 8px currentColor;
-    }
-
     body {
       margin: 0;
       min-height: 100vh;
@@ -319,13 +271,6 @@
     }
 
     @media (max-width: 700px) {
-      .sound-toggle {
-        top: 0.85rem;
-        right: 0.85rem;
-        padding: 0.45rem 1.1rem;
-        letter-spacing: 0.22em;
-      }
-
       .planets {
         gap: 0.9rem;
       }
@@ -341,9 +286,8 @@
   </style>
 </head>
 <body>
-  <audio id="serene-loop" src="audio-serene.wav" loop preload="auto" muted playsinline></audio>
+  <audio id="serene-loop" src="wind-chimes.mp3" preload="auto" muted playsinline></audio>
   <main>
-    <button class="sound-toggle is-muted" id="sound-toggle" type="button" aria-pressed="false">Sound off</button>
     <header>
       <p class="tagline">6ixsense</p>
       <h1>Building something big.</h1>
@@ -454,17 +398,9 @@
     rafId = requestAnimationFrame(animateLetters);
 
     const audio = document.getElementById("serene-loop");
-    const soundToggle = document.getElementById("sound-toggle");
     const mainPanel = document.querySelector("main");
-    const targetVolume = 0.28;
+    const targetVolume = 0.24;
     let fadeFrame;
-
-    const updateToggleLabel = (forcedState) => {
-      const isMuted = forcedState === "off" || audio.paused || audio.muted || audio.volume < 0.01;
-      soundToggle.textContent = isMuted ? "Sound off" : "Sound on";
-      soundToggle.setAttribute("aria-pressed", String(!isMuted));
-      soundToggle.classList.toggle("is-muted", isMuted);
-    };
 
     const cancelFade = () => {
       if (fadeFrame) {
@@ -475,7 +411,7 @@
 
     const fadeTo = (target, onComplete) => {
       cancelFade();
-      const step = target > audio.volume ? 0.005 : -0.006;
+      const step = target > audio.volume ? 0.004 : -0.005;
 
       const tick = () => {
         const next = audio.volume + step;
@@ -498,18 +434,16 @@
     const playAudio = () => {
       audio.muted = false;
       audio.volume = 0;
+      audio.currentTime = 0;
       return audio.play().then(() => {
         fadeTo(targetVolume);
-        updateToggleLabel("on");
       }).catch(() => {
         audio.muted = true;
         audio.volume = 0;
-        updateToggleLabel("off");
       });
     };
 
     const pauseAudio = () => {
-      updateToggleLabel("off");
       fadeTo(0, () => {
         audio.pause();
         audio.muted = true;
@@ -524,32 +458,30 @@
       }
     };
 
-    soundToggle.addEventListener("click", (event) => {
-      event.stopPropagation();
-      toggleSound();
-    });
+    mainPanel.addEventListener("click", toggleSound);
 
-    mainPanel.addEventListener("click", (event) => {
-      if (event.target.closest("#sound-toggle")) {
-        return;
+    document.addEventListener("keydown", (event) => {
+      if (event.code === "Space") {
+        event.preventDefault();
+        toggleSound();
       }
-      toggleSound();
     });
 
-    audio.addEventListener("pause", () => {
-      updateToggleLabel("off");
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        pauseAudio();
+      }
     });
 
-    audio.addEventListener("playing", () => {
-      audio.muted = false;
-      updateToggleLabel("on");
+    audio.addEventListener("ended", () => {
+      playAudio();
     });
 
     audio.volume = 0;
     audio.muted = true;
     audio.loop = true;
     audio.setAttribute("playsinline", "");
-    updateToggleLabel("off");
+    audio.load();
   </script>
 </body>
 </html>
