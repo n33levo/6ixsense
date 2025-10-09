@@ -468,18 +468,26 @@
         planet.position.x += planet.velocity.x * delta * 1.6;
         planet.position.y += planet.velocity.y * delta * 1.6;
 
-        const margin = planet.size * 0.6;
+        const margin = planet.size * 0.5;
+        const minX = margin;
+        const maxX = viewport.width - margin;
+        const minY = margin;
+        const maxY = viewport.height - margin;
 
-        if (planet.position.x < -margin) {
-          planet.position.x = viewport.width + margin;
-        } else if (planet.position.x > viewport.width + margin) {
-          planet.position.x = -margin;
+        if (planet.position.x < minX) {
+          planet.position.x = minX;
+          planet.velocity.x = Math.abs(planet.velocity.x) * 0.88 + 0.28;
+        } else if (planet.position.x > maxX) {
+          planet.position.x = maxX;
+          planet.velocity.x = -Math.abs(planet.velocity.x) * 0.88 - 0.28;
         }
 
-        if (planet.position.y < -margin) {
-          planet.position.y = viewport.height + margin;
-        } else if (planet.position.y > viewport.height + margin) {
-          planet.position.y = -margin;
+        if (planet.position.y < minY) {
+          planet.position.y = minY;
+          planet.velocity.y = Math.abs(planet.velocity.y) * 0.88 + 0.28;
+        } else if (planet.position.y > maxY) {
+          planet.position.y = maxY;
+          planet.velocity.y = -Math.abs(planet.velocity.y) * 0.88 - 0.28;
         }
 
         planet.rotation += planet.rotationSpeed * delta * 0.5;
